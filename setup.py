@@ -1,12 +1,12 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='py3cw',
-    version='0.0.15',
+    name='py3cw-am11yfork',
+    version='0.0.16',
 
     description='3commas Python wrapper',
 
-    url='https://github.com/bogdanteodoru/py3cw',
+    url='https://github.com/am11y/py3cw-am11yfork',
 
     author='Bogdan Teodoru',
     author_email='me@bogdanteodoru.com',
