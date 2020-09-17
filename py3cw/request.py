@@ -2,10 +2,10 @@ import hashlib
 import hmac
 import requests
 import json
-from .config import API_URL, API_VERSION, API_METHODS
+from .config import API_URL, API_VERSION, API_VERSION2, API_METHODS
 from .utils import verify_request
 from requests.exceptions import HTTPError
-from urllib.parse import urlencode, quote_plus
+from urllib.parse import urlencode
 
 
 class IPy3CW:
@@ -13,7 +13,7 @@ class IPy3CW:
         pass
 
 
-class Py3CW:
+class Py3CW(IPy3CW):
 
     def __init__(self, key: str, secret: str):
         """
@@ -43,34 +43,27 @@ class Py3CW:
         Private method that makes the actual request. Returns the response in JSON format for both
         success and error responses.
         """
-        relative_url = f"{API_VERSION}{path}"
-
-        """
-        If there are any params on the request, concatenate the strings together
-        with the new params.
-        """
-        if params is not None and len(params) > 0:
-            relative_url = relative_url + f"?{params}"
-
-        """
-        Make sure the payload is None if the method is GET or when in fact
-        we have no payload.
-        """
-        if http_method == "GET" or (payload is not None and len(payload) == 0):
+        
+        apv = API_VERSION
+        if "smart_trades" in path and not "smart_trades_v1" in path:
+            apv = API_VERSION2
+        else:
+            path=path.replace("smart_trades_v1","smart_trades")
+            
+        if (params is not None and len(params) > 0):
+            relative_url = f"{apv}{path}?{params}"
+        else:
+            relative_url = f"{apv}{path}"
+            
+        if (http_method == "GET" or (payload is not None and len(payload) == 0)):
             payload = None
 
         signature = self.__generate_signature(relative_url, (json.dumps(payload) if payload is not None else ''))
-
-        """
-        Compute the absolute URL. Keep in mind that the signature generation for whatever reason doesn't
-        work when you try to compute it with absolute URL. You need to create it with relative URL.
-        """
-        absolute_url = f"{API_URL}{relative_url}"
-
         try:
+            request_url = f"{API_URL}{relative_url}"
             response = requests.request(
                 method=http_method,
-                url=absolute_url,
+                url=request_url,
                 headers={
                     'APIKEY': self.key,
                     'Signature': signature
@@ -79,7 +72,6 @@ class Py3CW:
             )
 
             response_json = json.loads(response.text)
-
             if type(response_json) is dict and 'error' in response_json:
                 return response_json, None
             else:
@@ -92,15 +84,19 @@ class Py3CW:
             return {'error': True, 'msg': 'Other error occurred: {0}'.format(err)}, None
 
     @verify_request
-    def request(self, entity: str, action: str = '', action_id: str = None, payload: any = None):
+    def request(self, entity: str, action: str = '', action_id: str = None, action_sub_id: str = None, payload: any = None):
         """
         Constructs the API Url and makes the request.
         """
-
         api = API_METHODS[entity][action]
         method, api_path = api
         api_path = api_path.replace('{id}', action_id or '')
-        is_get_with_payload = method == 'GET' and payload is not None
+        api_path = api_path.replace('{sub_id}', action_sub_id or '')
+
+        if method == 'GET' and payload is not None:
+            params = urlencode(payload)
+        else:
+            params = ''
 
         return self.__make_request(
             http_method=method,
@@ -109,6 +105,6 @@ class Py3CW:
                 separator='/' if api_path else '',
                 api_path=api_path or ''
             ),
-            params=urlencode(payload, quote_via=quote_plus) if is_get_with_payload else '',
+            params=params,
             payload=payload
         )
