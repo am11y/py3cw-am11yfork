@@ -20,7 +20,7 @@ def verify_request(func):
             raise ValueError('Invalid entity')
         if action not in API_METHODS[entity]:
             raise ValueError('Invalid action')
-        if '{id}' in api_path and (action_id is None or action_id == ''):
+        if '{id}' in api_path and (action_id is None or action_id == '') and entity != "smart_trades":
             raise ValueError('Missing ID for {action}'.format(action=action))
 
         return func(*args, **kw)
