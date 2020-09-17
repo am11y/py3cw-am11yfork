@@ -8,7 +8,7 @@ Unofficial wrapper for the [3Commas API](https://github.com/3commas-io/3commas-o
 How to install 
 
 ```bash
-pip install py3cw
+pip install py3cw-am11yfork
 ```
 
 How to use
