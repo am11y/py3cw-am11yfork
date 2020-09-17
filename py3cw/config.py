@@ -1,5 +1,6 @@
 API_URL = 'https://api.3commas.io'
 API_VERSION = '/public/api/ver1/'
+API_VERSION2 = '/public/api/v2/'
 
 # API methods from
 # https://github.com/3commas-io/3commas-official-api-docs
@@ -70,7 +71,7 @@ API_METHODS = {
         'items': ('GET', 'items'),
         'signals': ('GET', '{id}/signals')
     },
-    'smart_trades': {
+    'smart_trades_v1': {
         '': ('GET', ''),
         'create_simple_sell': ('POST', 'create_simple_sell'),
         'create_simple_buy': ('POST', 'create_simple_buy'),
@@ -83,6 +84,19 @@ API_METHODS = {
         'update': ('PATCH', '{id}/update'),
         'cancel': ('POST', '{id}/cancel'),
         'panic_sell': ('POST', '{id}/panic_sell'),
+        'force_process': ('POST', '{id}/force_process'),
+    },
+    'smart_trades': {
+        '': ('GET', '{id}'),
+        'create_smart_trade': ('POST', ''),
+        'add_funds': ('POST', '{id}/add_funds'),
+        'close_by_market': ('POST', '{id}/close_by_market'),
+        'cancel': ('DELETE', '{id}'),
+        'set_note': ('POST', '{id}/set_note'),
+        'trades': ('GET', '{id}/trades'),
+        'cancel_trade': ('DELETE', '{id}/trades/{sub_id}'),
+        'step_panic_sell': ('POST', '{id}/step_panic_sell'),
+        'update': ('PATCH', '{id}'),
         'force_process': ('POST', '{id}/force_process')
     },
     'users': {
