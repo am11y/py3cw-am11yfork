@@ -64,6 +64,7 @@ class Py3CW(IPy3CW):
             response = requests.request(
                 method=http_method,
                 url=request_url,
+                timeout=5,
                 headers={
                     'APIKEY': self.key,
                     'Signature': signature
