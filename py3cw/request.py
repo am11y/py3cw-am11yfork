@@ -38,7 +38,7 @@ class Py3CW(IPy3CW):
         signature = hmac.new(encoded_key, message, hashlib.sha256).hexdigest()
         return signature
 
-    def __make_request(self, http_method: str, path: str, params: any, payload: any):
+    def __make_request(self, http_method: str, path: str, params: any, payload: any, timeout: int = 0):
         """
         Private method that makes the actual request. Returns the response in JSON format for both
         success and error responses.
@@ -61,16 +61,27 @@ class Py3CW(IPy3CW):
         signature = self.__generate_signature(relative_url, (json.dumps(payload) if payload is not None else ''))
         try:
             request_url = f"{API_URL}{relative_url}"
-            response = requests.request(
-                method=http_method,
-                url=request_url,
-                timeout=5,
-                headers={
-                    'APIKEY': self.key,
-                    'Signature': signature
-                },
-                json=payload
-            )
+            if timeout != 0:
+                response = requests.request(
+                    method=http_method,
+                    url=request_url,
+                    timeout=timeout,
+                    headers={
+                        'APIKEY': self.key,
+                        'Signature': signature
+                    },
+                    json=payload
+                )
+            else:
+                response = requests.request(
+                    method=http_method,
+                    url=request_url,
+                    headers={
+                        'APIKEY': self.key,
+                        'Signature': signature
+                    },
+                    json=payload
+                )
 
             response_json = json.loads(response.text)
             if type(response_json) is dict and 'error' in response_json:
@@ -85,7 +96,7 @@ class Py3CW(IPy3CW):
             return {'error': True, 'msg': 'Other error occurred: {0}'.format(err)}, None
 
     @verify_request
-    def request(self, entity: str, action: str = '', action_id: str = None, action_sub_id: str = None, payload: any = None):
+    def request(self, entity: str, action: str = '', action_id: str = None, action_sub_id: str = None, payload: any = None, timeout: int = 10):
         """
         Constructs the API Url and makes the request.
         """
@@ -107,5 +118,6 @@ class Py3CW(IPy3CW):
                 api_path=api_path or ''
             ),
             params=params,
-            payload=payload
+            payload=payload,
+            timeout = timeout
         )
